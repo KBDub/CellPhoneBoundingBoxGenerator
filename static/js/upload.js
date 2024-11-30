@@ -1,6 +1,30 @@
 document.addEventListener('DOMContentLoaded', async function() {
     const form = document.getElementById('uploadForm');
     const objectClasses = document.getElementById('objectClasses');
+    const videoInput = document.getElementById('video');
+    const videoPreviewContainer = document.getElementById('videoPreviewContainer');
+    const videoPreview = document.getElementById('videoPreview');
+    
+    // Handle video file selection for preview
+    videoInput.addEventListener('change', function(e) {
+        const files = e.target.files;
+        if (files && files.length > 0) {
+            const file = files[0]; // Preview first selected video
+            if (file.type.startsWith('video/')) {
+                const videoUrl = URL.createObjectURL(file);
+                videoPreview.src = videoUrl;
+                videoPreviewContainer.classList.remove('d-none');
+                
+                // Clean up object URL when video is loaded
+                videoPreview.onloadeddata = function() {
+                    URL.revokeObjectURL(videoUrl);
+                };
+            }
+        } else {
+            videoPreviewContainer.classList.add('d-none');
+            videoPreview.src = '';
+        }
+    });
     
     // Fetch available classes
     try {

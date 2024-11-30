@@ -13,6 +13,14 @@
                         <label for="video" class="form-label">Select Video File (.mp4)</label>
                         <input type="file" class="form-control" id="video" accept=".mp4" multiple required>
                     </div>
+                    <div id="videoPreviewContainer" class="mb-3 d-none">
+                        <label class="form-label">Video Preview</label>
+                        <div class="video-preview-wrapper">
+                            <video id="videoPreview" class="w-100" controls>
+                                Your browser does not support the video tag.
+                            </video>
+                        </div>
+                    </div>
                     <div class="mb-3">
                         <label class="form-label">Select Objects to Detect</label>
                         <div class="row" id="objectClasses">
