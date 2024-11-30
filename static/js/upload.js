@@ -143,7 +143,8 @@ document.addEventListener('DOMContentLoaded', async function() {
                 
                 const img = document.createElement('img');
                 img.className = 'card-img-top';
-                img.src = '/download/' + imagePath.path;
+                const cleanPath = imagePath.path.replace(/^tmp\//, '');
+                img.src = '/download/' + encodeURIComponent(cleanPath);
                 
                 const cardBody = document.createElement('div');
                 cardBody.className = 'card-body';
@@ -153,7 +154,7 @@ document.addEventListener('DOMContentLoaded', async function() {
                 className.textContent = `Detected: ${imagePath.class}`;
                 
                 const downloadBtn = document.createElement('a');
-                downloadBtn.href = '/download/' + imagePath.path;
+                downloadBtn.href = '/download/' + encodeURIComponent(cleanPath);
                 downloadBtn.className = 'btn btn-sm btn-secondary';
                 downloadBtn.textContent = 'Download';
                 downloadBtn.download = '';

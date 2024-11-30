@@ -1,5 +1,6 @@
 import os
 import tempfile
+import time
 from flask import Flask, render_template, request, jsonify, send_file
 from werkzeug.utils import secure_filename
 from utils.video_processor import VideoProcessor
@@ -28,6 +29,8 @@ def get_classes():
 
 @app.route('/upload', methods=['POST'])
 def upload_file():
+    # Clean up old files before processing new upload
+    cleanup_old_files()
     if 'video' not in request.files:
         return jsonify({'error': 'No video file provided'}), 400
     
@@ -67,6 +70,29 @@ def upload_file():
 @app.route('/download/<path:image_path>')
 def download_image(image_path):
     try:
-        return send_file(image_path, as_attachment=True)
+        # Remove 'tmp/' prefix if present
+        clean_path = image_path.replace('tmp/', '', 1)
+        # Get full path in temp directory
+        full_path = os.path.join(tempfile.gettempdir(), os.path.basename(clean_path))
+        
+        if not os.path.exists(full_path):
+            return jsonify({'error': 'File not found'}), 404
+            
+        return send_file(full_path, as_attachment=True)
     except Exception as e:
         return jsonify({'error': str(e)}), 404
+
+def cleanup_old_files():
+    """Clean up old temporary files (older than 1 hour)"""
+    temp_dir = tempfile.gettempdir()
+    current_time = time.time()
+    max_age = 3600  # 1 hour
+    
+    for filename in os.listdir(temp_dir):
+        if filename.endswith('.jpg'):  # Only process our image files
+            filepath = os.path.join(temp_dir, filename)
+            try:
+                if current_time - os.path.getctime(filepath) > max_age:
+                    os.remove(filepath)
+            except OSError:
+                continue
