@@ -31,37 +31,44 @@ def get_classes():
 def upload_file():
     # Clean up old files before processing new upload
     cleanup_old_files()
-    if 'video' not in request.files:
-        return jsonify({'error': 'No video file provided'}), 400
     
-    file = request.files['video']
-    if file.filename == '':
-        return jsonify({'error': 'No selected file'}), 400
+    if 'videos[]' not in request.files:
+        return jsonify({'error': 'No video files provided'}), 400
     
-    if not allowed_file(file.filename):
-        return jsonify({'error': 'Invalid file type'}), 400
-
+    files = request.files.getlist('videos[]')
+    if not files or all(file.filename == '' for file in files):
+        return jsonify({'error': 'No selected files'}), 400
+    
+    all_result_images = []
+    
     try:
-        # Generate unique filename
-        filename = secure_filename(f"{uuid.uuid4()}_{file.filename}")
-        filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-        file.save(filepath)
-
         # Get selected classes from form data
         selected_classes = request.form.getlist('classes[]')
         selected_classes = [int(cls) for cls in selected_classes] if selected_classes else None
         
-        # Process video
-        processor = VideoProcessor(filepath, target_classes=selected_classes)
-        result_images = processor.process()
-
-        # Clean up
-        os.remove(filepath)
-
+        for file in files:
+            if not allowed_file(file.filename):
+                continue
+                
+            # Generate unique filename
+            filename = secure_filename(f"{uuid.uuid4()}_{file.filename}")
+            filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+            file.save(filepath)
+            
+            try:
+                # Process video
+                processor = VideoProcessor(filepath, target_classes=selected_classes)
+                result_images = processor.process()
+                all_result_images.extend(result_images)
+            finally:
+                # Clean up each video file after processing
+                if os.path.exists(filepath):
+                    os.remove(filepath)
+        
         return jsonify({
             'status': 'success',
-            'message': 'Video processed successfully',
-            'images': result_images
+            'message': f'Processed {len(files)} videos successfully',
+            'images': all_result_images
         })
 
     except Exception as e:

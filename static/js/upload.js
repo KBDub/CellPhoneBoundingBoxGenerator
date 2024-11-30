@@ -46,20 +46,23 @@ document.addEventListener('DOMContentLoaded', async function() {
         e.preventDefault();
         
         const formData = new FormData();
-        const videoFile = document.getElementById('video').files[0];
+        const videoFiles = document.getElementById('video').files;
         
-        if (!videoFile) {
-            showError('Please select a video file');
+        if (!videoFiles || videoFiles.length === 0) {
+            showError('Please select at least one video file');
             return;
         }
 
-        // Check file size
-        if (videoFile.size > MAX_FILE_SIZE) {
-            showError(`File size exceeds limit (${formatFileSize(MAX_FILE_SIZE)}). Please choose a smaller file.`);
-            return;
+        // Check total size and append files
+        let totalSize = 0;
+        for (let i = 0; i < videoFiles.length; i++) {
+            totalSize += videoFiles[i].size;
+            if (totalSize > MAX_FILE_SIZE) {
+                showError(`Total file size exceeds limit (${formatFileSize(MAX_FILE_SIZE)}). Please choose smaller files.`);
+                return;
+            }
+            formData.append('videos[]', videoFiles[i]);
         }
-
-        formData.append('video', videoFile);
         
         // Add selected classes
         document.querySelectorAll('input[name="classes[]"]:checked').forEach(checkbox => {
