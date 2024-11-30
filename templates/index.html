@@ -5,13 +5,19 @@
     <div class="col-md-8">
         <div class="card">
             <div class="card-header">
-                <h4 class="mb-0">Video Phone Detection</h4>
+                <h4 class="mb-0">Video Object Detection</h4>
             </div>
             <div class="card-body">
                 <form id="uploadForm">
                     <div class="mb-3">
                         <label for="video" class="form-label">Select Video File (.mp4)</label>
                         <input type="file" class="form-control" id="video" accept=".mp4" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Select Objects to Detect</label>
+                        <div class="row" id="objectClasses">
+                            <!-- Classes will be populated by JavaScript -->
+                        </div>
                     </div>
                     <button type="submit" class="btn btn-primary">Process Video</button>
                 </form>
@@ -24,7 +30,7 @@
                 </div>
 
                 <div id="results" class="mt-4">
-                    <h5>Detected Phones</h5>
+                    <h5>Detected Objects</h5>
                     <div id="imageContainer" class="row"></div>
                 </div>
             </div>

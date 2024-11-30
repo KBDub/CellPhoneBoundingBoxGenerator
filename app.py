@@ -22,6 +22,10 @@ def allowed_file(filename):
 def index():
     return render_template('index.html')
 
+@app.route('/classes')
+def get_classes():
+    return jsonify(VideoProcessor.get_supported_classes())
+
 @app.route('/upload', methods=['POST'])
 def upload_file():
     if 'video' not in request.files:
@@ -40,8 +44,12 @@ def upload_file():
         filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
         file.save(filepath)
 
+        # Get selected classes from form data
+        selected_classes = request.form.getlist('classes[]')
+        selected_classes = [int(cls) for cls in selected_classes] if selected_classes else None
+        
         # Process video
-        processor = VideoProcessor(filepath)
+        processor = VideoProcessor(filepath, target_classes=selected_classes)
         result_images = processor.process()
 
         # Clean up

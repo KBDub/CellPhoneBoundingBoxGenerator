@@ -1,5 +1,41 @@
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', async function() {
     const form = document.getElementById('uploadForm');
+    const objectClasses = document.getElementById('objectClasses');
+    
+    // Fetch available classes
+    try {
+        const response = await fetch('/classes');
+        const classes = await response.json();
+        
+        // Create checkboxes for each class
+        Object.entries(classes).forEach(([id, name]) => {
+            const col = document.createElement('div');
+            col.className = 'col-md-4 mb-2';
+            
+            const div = document.createElement('div');
+            div.className = 'form-check';
+            
+            const input = document.createElement('input');
+            input.type = 'checkbox';
+            input.className = 'form-check-input';
+            input.id = `class-${id}`;
+            input.name = 'classes[]';
+            input.value = id;
+            input.checked = true; // Default all checked
+            
+            const label = document.createElement('label');
+            label.className = 'form-check-label';
+            label.htmlFor = `class-${id}`;
+            label.textContent = name;
+            
+            div.appendChild(input);
+            div.appendChild(label);
+            col.appendChild(div);
+            objectClasses.appendChild(col);
+        });
+    } catch (error) {
+        console.error('Error loading object classes:', error);
+    }
     const progress = document.getElementById('progress');
     const progressBar = progress.querySelector('.progress-bar');
     const imageContainer = document.getElementById('imageContainer');
@@ -24,6 +60,11 @@ document.addEventListener('DOMContentLoaded', function() {
         }
 
         formData.append('video', videoFile);
+        
+        // Add selected classes
+        document.querySelectorAll('input[name="classes[]"]:checked').forEach(checkbox => {
+            formData.append('classes[]', checkbox.value);
+        });
 
         // Show progress
         progress.classList.remove('d-none');
@@ -102,17 +143,22 @@ document.addEventListener('DOMContentLoaded', function() {
                 
                 const img = document.createElement('img');
                 img.className = 'card-img-top';
-                img.src = '/download/' + imagePath;
+                img.src = '/download/' + imagePath.path;
                 
                 const cardBody = document.createElement('div');
                 cardBody.className = 'card-body';
+
+                const className = document.createElement('p');
+                className.className = 'card-text mb-2';
+                className.textContent = `Detected: ${imagePath.class}`;
                 
                 const downloadBtn = document.createElement('a');
-                downloadBtn.href = '/download/' + imagePath;
+                downloadBtn.href = '/download/' + imagePath.path;
                 downloadBtn.className = 'btn btn-sm btn-secondary';
                 downloadBtn.textContent = 'Download';
                 downloadBtn.download = '';
                 
+                cardBody.appendChild(className);
                 cardBody.appendChild(downloadBtn);
                 card.appendChild(img);
                 card.appendChild(cardBody);
