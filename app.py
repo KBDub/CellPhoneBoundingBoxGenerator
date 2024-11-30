@@ -77,8 +77,25 @@ def download_image(image_path):
         
         if not os.path.exists(full_path):
             return jsonify({'error': 'File not found'}), 404
+
+        # Verify file is a valid image
+        try:
+            import imghdr
+            with open(full_path, 'rb') as f:
+                image_type = imghdr.what(f)
+            if not image_type:
+                return jsonify({'error': 'Invalid image file'}), 400
+        except Exception:
+            return jsonify({'error': 'Unable to verify image integrity'}), 400
             
-        return send_file(full_path, as_attachment=True)
+        response = send_file(
+            full_path,
+            mimetype=f'image/{image_type}',
+            as_attachment=False,
+            max_age=3600  # 1 hour cache
+        )
+        response.headers['Cache-Control'] = 'public, max-age=3600'
+        return response
     except Exception as e:
         return jsonify({'error': str(e)}), 404
 

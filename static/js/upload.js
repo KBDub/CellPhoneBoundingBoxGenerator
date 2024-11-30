@@ -141,9 +141,36 @@ document.addEventListener('DOMContentLoaded', async function() {
                 const card = document.createElement('div');
                 card.className = 'card';
                 
+                // Create loading placeholder
+                const placeholderDiv = document.createElement('div');
+                placeholderDiv.className = 'card-img-top placeholder-glow';
+                placeholderDiv.style.height = '200px';
+                placeholderDiv.innerHTML = '<span class="placeholder col-12 h-100"></span>';
+                
                 const img = document.createElement('img');
-                img.className = 'card-img-top';
+                img.className = 'card-img-top d-none';
                 const cleanPath = imagePath.path.replace(/^tmp\//, '');
+                
+                // Handle image loading
+                img.onload = () => {
+                    placeholderDiv.remove();
+                    img.classList.remove('d-none');
+                };
+                
+                // Handle image error
+                img.onerror = () => {
+                    placeholderDiv.remove();
+                    img.classList.remove('d-none');
+                    img.src = 'data:image/svg+xml,' + encodeURIComponent(`
+                        <svg xmlns="http://www.w3.org/2000/svg" width="100%" height="200" viewBox="0 0 100 100">
+                            <rect width="100%" height="100%" fill="#6c757d"/>
+                            <text x="50%" y="50%" fill="#dee2e6" text-anchor="middle" dominant-baseline="middle">
+                                Image Failed to Load
+                            </text>
+                        </svg>
+                    `);
+                };
+                
                 img.src = '/download/' + encodeURIComponent(cleanPath);
                 
                 const cardBody = document.createElement('div');
@@ -161,13 +188,14 @@ document.addEventListener('DOMContentLoaded', async function() {
                 
                 cardBody.appendChild(className);
                 cardBody.appendChild(downloadBtn);
+                card.appendChild(placeholderDiv);
                 card.appendChild(img);
                 card.appendChild(cardBody);
                 col.appendChild(card);
                 imageContainer.appendChild(col);
             });
         } else {
-            imageContainer.innerHTML = '<p class="text-muted">No phones detected in the video.</p>';
+            imageContainer.innerHTML = '<p class="text-muted">No objects detected in the video.</p>';
         }
     }
 });
